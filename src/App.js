@@ -5,7 +5,8 @@ function App() {
 
   useEffect(() => {
     // 백엔드 API 호출
-    fetch('http://localhost:5000')
+   // fetch('http://localhost:5000')
+  fetch('http://linkback-production.up.railway.app')
       .then(response => response.json())
       .then(data => setMessage(data.message))
       .catch(error => console.error('Error fetching data:', error));
