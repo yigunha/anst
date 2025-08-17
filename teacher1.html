@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>선생님 관리 페이지</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; background-color: #f4f4f9; }
+        .controls { margin-bottom: 1em; display: flex; gap: 10px; }
+        .controls button { padding: 10px 20px; font-size: 16px; border: none; border-radius: 4px; cursor: pointer; }
+        #clear-all-btn { background-color: #dc3545; color: white; }
+        #delete-selected-btn { background-color: #ffc107; color: black; }
+        #download-btn { background-color: #007bff; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em; background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .no-data { text-align: center; padding: 2em; color: #888; }
+    </style>
+</head>
+<body>
+    <h1>학생 답변 목록</h1>
+    
+    <div class="controls">
+        <button id="clear-all-btn">모든 답변 삭제</button>
+        <button id="delete-selected-btn">선택 삭제</button>
+        <button id="download-btn">CSV 다운로드</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>번호</th>
+                <th>문장</th>
+                <th>제출 시간</th>
+            </tr>
+        </thead>
+        <tbody id="answers-table-body">
+            <tr class="no-data"><td colspan="4">데이터가 없습니다.</td></tr>
+        </tbody>
+    </table>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.js"></script>
+</body>
+</html>
