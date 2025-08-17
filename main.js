@@ -1,5 +1,5 @@
 // Supabase 클라이언트 설정 (학생, 선생님 페이지 공용)
-const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co"';
+const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM";
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
