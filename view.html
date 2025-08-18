@@ -23,10 +23,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            display: none; /* 타이틀 삭제 */
-        }
-
         .controls {
             display: flex;
             gap: 15px;
@@ -67,13 +63,6 @@
             background: #c82333;
         }
 
-        .search-input {
-            flex-grow: 2;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-
         /* 데스크톱용 테이블 뷰 */
         .data-grid-table {
             display: none;
@@ -94,14 +83,14 @@
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             padding: 15px;
-            text-align: left;
+            text-align: center; /* 가운데 정렬 */
             font-weight: bold;
         }
 
         td {
             padding: 15px;
             border-bottom: 1px solid #eee;
-            vertical-align: top;
+            vertical-align: middle;
         }
 
         tr:hover {
@@ -112,6 +101,10 @@
             max-width: 300px;
             word-wrap: break-word;
             line-height: 1.4;
+        }
+
+        .delete-checkbox-cell {
+            text-align: center; /* 체크박스 가운데 정렬 */
         }
         
         /* 모바일용 카드 뷰 */
@@ -130,7 +123,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: transform 0.2s;
         }
-        
+
         .data-card:hover {
             transform: translateY(-3px);
         }
@@ -141,7 +134,7 @@
             align-items: center;
             margin-bottom: 5px;
         }
-        
+
         .card-label {
             font-weight: bold;
             color: #555;
@@ -197,6 +190,12 @@
             font-style: italic;
         }
 
+        .delete-checkbox-mobile {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
         /* 모바일에서만 카드 뷰를 표시 */
         @media (max-width: 767px) {
             .data-grid-table {
@@ -220,23 +219,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 학생 데이터 조회</h1>
-        
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="" class="search-input">
             <button onclick="loadData()">🔄 새로고침</button>
             <button id="deleteSelectedBtn" onclick="deleteSelectedRecords()">🗑️ 선택 삭제</button>
         </div>
 
         <div id="message"></div>
-        
+
         <div class="data-grid-table" id="desktopTable">
             <table>
                 <thead>
                     <tr>
                         <th style="width: 15%;">학생 이름</th>
                         <th>내용</th>
-                        <th style="width: 10%;">체크</th>
+                        <th style="width: 10%;"><input type="checkbox" id="selectAllDesktop"></th>
                     </tr>
                 </thead>
                 <tbody id="dataBody">
@@ -245,7 +241,7 @@
         </div>
 
         <div class="data-grid-mobile" id="mobileGrid">
-            </div>
+        </div>
 
         <div id="noData" class="no-data" style="display: none;">
             📝 아직 저장된 데이터가 없습니다.
@@ -320,7 +316,7 @@
                 <tr>
                     <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
                     <td class="content-cell">${escapeHtml(row.content || '')}</td>
-                    <td>
+                    <td class="delete-checkbox-cell">
                         <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
                     </td>
                 </tr>
@@ -339,12 +335,41 @@
                     <div class="content-card-value">
                         ${escapeHtml(row.content || '')}
                     </div>
-                    <div style="position: absolute; top: 10px; right: 10px;">
+                    <div class="delete-checkbox-mobile">
                         <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
                     </div>
                 </div>
             `).join('');
+
+            // 체크박스 이벤트 리스너 추가 (데이터 로드 후)
+            addCheckboxListeners();
         }
+
+        // 체크박스 이벤트 리스너 추가
+        function addCheckboxListeners() {
+            const selectAllDesktop = document.getElementById('selectAllDesktop');
+            const checkboxes = document.querySelectorAll('.delete-checkbox');
+
+            // 데스크톱 전체 선택/해제
+            if (selectAllDesktop) {
+                selectAllDesktop.addEventListener('change', (e) => {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = e.target.checked;
+                    });
+                });
+            }
+
+            // 개별 체크박스 상태 변경 시 전체 선택박스 상태 업데이트
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    if (selectAllDesktop) {
+                        selectAllDesktop.checked = allChecked;
+                    }
+                });
+            });
+        }
+
 
         // 선택 항목 삭제
         async function deleteSelectedRecords() {
@@ -359,7 +384,7 @@
             }
 
             const idsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
-            
+
             try {
                 const { error } = await supabase
                     .from('student_inputs')
@@ -377,25 +402,6 @@
                 showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
             }
         }
-
-        // 검색 기능
-        function filterData() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (!searchTerm) {
-                displayData(allData);
-                return;
-            }
-
-            const filteredData = allData.filter(row => 
-                (row.content && row.content.toLowerCase().includes(searchTerm))
-            );
-
-            displayData(filteredData);
-        }
-
-        // 검색 입력 이벤트
-        document.getElementById('searchInput').addEventListener('input', filterData);
 
         // 유틸리티 함수들
         function escapeHtml(text) {
