@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학생 데이터</title>
+    <title>데이터 보기</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -83,7 +83,7 @@
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             padding: 15px;
-            text-align: center; /* 가운데 정렬 */
+            text-align: center;
             font-weight: bold;
         }
 
@@ -104,7 +104,7 @@
         }
 
         .delete-checkbox-cell {
-            text-align: center; /* 체크박스 가운데 정렬 */
+            text-align: center;
         }
         
         /* 모바일용 카드 뷰 */
@@ -341,7 +341,6 @@
                 </div>
             `).join('');
 
-            // 체크박스 이벤트 리스너 추가 (데이터 로드 후)
             addCheckboxListeners();
         }
 
@@ -350,7 +349,6 @@
             const selectAllDesktop = document.getElementById('selectAllDesktop');
             const checkboxes = document.querySelectorAll('.delete-checkbox');
 
-            // 데스크톱 전체 선택/해제
             if (selectAllDesktop) {
                 selectAllDesktop.addEventListener('change', (e) => {
                     checkboxes.forEach(checkbox => {
@@ -359,7 +357,6 @@
                 });
             }
 
-            // 개별 체크박스 상태 변경 시 전체 선택박스 상태 업데이트
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
                     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -369,7 +366,6 @@
                 });
             });
         }
-
 
         // 선택 항목 삭제
         async function deleteSelectedRecords() {
@@ -396,7 +392,7 @@
                 }
 
                 showMessage('✅ 선택된 데이터가 삭제되었습니다!', 'success');
-                loadData(); // 데이터 다시 로드
+                // 실시간 기능이 있으므로 굳이 loadData()를 다시 호출할 필요가 없습니다.
             } catch (error) {
                 console.error('삭제 오류:', error);
                 showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
@@ -409,6 +405,14 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // 실시간 리스너 추가
+        const student_inputs_channel = supabase.channel('public:student_inputs')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'student_inputs' }, payload => {
+            console.log('실시간 변경 감지:', payload);
+            loadData(); // 변경 사항이 감지되면 데이터 다시 불러오기
+          })
+          .subscribe();
 
         // 페이지 로드 시 자동 데이터 로드
         window.addEventListener('load', loadData);
