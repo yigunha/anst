@@ -15,26 +15,19 @@
             min-height: 100vh;
         }
 
+        /* 모든 요소에 box-sizing 적용 */
+        * {
+            box-sizing: border-box;
+        }
+
         .container {
             background: white;
             border-radius: 15px;
-            padding: 10px; /* 저장 버튼 위 여백을 1/2로 줄였습니다. */
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            gap: 10px; /* 모든 요소 간의 간격을 통일했습니다. */
-        }
-
-        .form-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-row label {
-            white-space: nowrap;
-            font-weight: bold;
-            color: #555;
+            gap: 25px;
         }
         
         button {
@@ -61,7 +54,7 @@
         }
         
         input, textarea {
-            width: 100%; /* 버튼과 너비를 통일했습니다. */
+            width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
@@ -75,10 +68,23 @@
         }
 
         textarea {
-            height: 150px;
+            height: 200px;
             resize: vertical;
+            margin-top: 20px;
         }
 
+        /* 학생이름과 입력창을 한 줄에 배치하기 위해 flexbox 사용 */
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+	    margin-top: 15px;
+        }
+        .name-row label {
+            white-space: nowrap;
+            font-weight: bold;
+            color: #555;
+        }
         .message {
             margin-top: 20px;
             padding: 15px;
@@ -113,7 +119,7 @@
 
             <textarea id="content" required placeholder="여기에 문장을 입력하세요..."></textarea>
             
-            <div class="form-row">
+            <div class="name-row">
                 <label for="studentName">학생 이름:</label>
                 <input type="text" id="studentName" required placeholder="이름을 입력하세요">
             </div>
@@ -127,7 +133,7 @@
     <script>
         // Supabase 설정 값
         const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQ3MTkwNX0.w3s6vY6YtqPqX_s1_fE_o7Xg9W_5fD_E_0b_0c_0a_0b_0a_0b_0c_0d_0e_0f_0g";
 
         // Supabase 클라이언트 초기화
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
