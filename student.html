@@ -22,13 +22,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -108,55 +101,17 @@
             color: #004085;
             border: 1px solid #b3d7ff;
         }
-
-        .config-section {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .config-section h3 {
-            margin-top: 0;
-            color: #495057;
-        }
-
-        .config-section small {
-            color: #6c757d;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 학생 문장 입력</h1>
-        
-        <!-- Supabase 설정 섹션 -->
-        <div class="config-section">
-            <h3>🔧 Supabase 설정</h3>
-            <div class="form-group">
-                <label for="supabaseUrl">Supabase URL:</label>
-                <input type="url" id="supabaseUrl" placeholder="https://your-project.supabase.co">
-                <small>예: https://xyzabc123.supabase.co</small>
-            </div>
-            <div class="form-group">
-                <label for="supabaseKey">Supabase Anon Key:</label>
-                <input type="text" id="supabaseKey" placeholder="eyJ...">
-                <small>프로젝트 설정 → API에서 anon/public key를 복사하세요</small>
-            </div>
-        </div>
-
-        <!-- 데이터 입력 폼 -->
         <form id="studentForm">
             <div class="form-group">
                 <label for="studentName">학생 이름:</label>
                 <input type="text" id="studentName" required placeholder="이름을 입력하세요">
             </div>
 
-            <div class="form-group">
-                <label for="subject">주제:</label>
-                <input type="text" id="subject" required placeholder="문장의 주제를 입력하세요">
-            </div>
+            <input type="hidden" id="subject" value="">
 
             <div class="form-group">
                 <label for="content">내용:</label>
@@ -170,26 +125,13 @@
     </div>
 
     <script>
-        let supabase = null;
+        // Supabase 설정 값
+        const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM";
 
         // Supabase 클라이언트 초기화
-        function initializeSupabase() {
-            const url = document.getElementById('supabaseUrl').value.trim();
-            const key = document.getElementById('supabaseKey').value.trim();
-
-            if (!url || !key) {
-                return false;
-            }
-
-            try {
-                supabase = window.supabase.createClient(url, key);
-                return true;
-            } catch (error) {
-                showMessage('Supabase 설정에 오류가 있습니다: ' + error.message, 'error');
-                return false;
-            }
-        }
-
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // 메시지 표시 함수
         function showMessage(text, type) {
             const messageDiv = document.getElementById('message');
@@ -204,15 +146,17 @@
             }
         }
 
-        // 폼 제출 처리
+        // 1. 페이지 로드 시 로컬 스토리지에서 학생 이름 불러오기
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedStudentName = localStorage.getItem('studentName');
+            if (savedStudentName) {
+                document.getElementById('studentName').value = savedStudentName;
+            }
+        });
+
+        // 2. 폼 제출 처리
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // Supabase 초기화 확인
-            if (!initializeSupabase()) {
-                showMessage('먼저 Supabase 설정을 완료해주세요!', 'error');
-                return;
-            }
 
             const submitBtn = document.getElementById('submitBtn');
             const originalText = submitBtn.textContent;
@@ -224,51 +168,11 @@
                 showMessage('데이터를 저장하고 있습니다...', 'loading');
 
                 // 입력값 가져오기
-                const formData = {
-                    user_id: document.getElementById('studentName').value.trim(), // 학생 이름을 user_id로 사용
-                    subject: document.getElementById('subject').value.trim(),
-                    content: document.getElementById('content').value.trim()
-                };
+                const studentName = document.getElementById('studentName').value.trim();
+                const content = document.getElementById('content').value.trim();
+                
+                // localStorage에 학생 이름 저장
+                localStorage.setItem('studentName', studentName);
 
-                // Supabase에 데이터 저장
-                const { data, error } = await supabase
-                    .from('student_inputs')
-                    .insert([formData])
-                    .select();
-
-                if (error) {
-                    throw error;
-                }
-
-                // 성공 처리
-                showMessage('✅ 성공적으로 저장되었습니다!', 'success');
-                document.getElementById('studentForm').reset();
-                console.log('저장된 데이터:', data);
-
-            } catch (error) {
-                console.error('저장 오류:', error);
-                showMessage('❌ 저장 중 오류가 발생했습니다: ' + error.message, 'error');
-            } finally {
-                // 버튼 상태 복원
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
-
-        // 설정 저장을 위한 메모리 변수
-        let savedConfig = {
-            url: '',
-            key: ''
-        };
-
-        // 설정 변경시 메모리에 저장
-        document.getElementById('supabaseUrl').addEventListener('change', (e) => {
-            savedConfig.url = e.target.value;
-        });
-
-        document.getElementById('supabaseKey').addEventListener('change', (e) => {
-            savedConfig.key = e.target.value;
-        });
-    </script>
-</body>
-</html>
+                // 동일한 이름의 학생이 이미 존재하는지 확인
+                const { data
