@@ -18,34 +18,50 @@
         .container {
             background: white;
             border-radius: 15px;
-            padding: 40px;
+            padding: 10px; /* 저장 버튼 위 여백을 1/2로 줄였습니다. */
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* 모든 요소 간의 간격을 통일했습니다. */
         }
 
         .form-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
         }
 
         .form-row label {
-            white-space: nowrap; /* 라벨이 줄바꿈되지 않도록 */
-        }
-
-        .form-row input {
-            flex-grow: 1; /* 입력 필드가 남은 공간을 채우도록 */
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
+            white-space: nowrap;
             font-weight: bold;
             color: #555;
         }
-
-        input, textarea {
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
             width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        input, textarea {
+            width: 100%; /* 버튼과 너비를 통일했습니다. */
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
@@ -61,30 +77,6 @@
         textarea {
             height: 150px;
             resize: vertical;
-        }
-
-        button {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .message {
@@ -117,19 +109,16 @@
 <body>
     <div class="container">
         <form id="studentForm">
+            <button type="submit" id="submitBtn">💾 저장하기</button>
+
+            <textarea id="content" required placeholder="여기에 문장을 입력하세요..."></textarea>
+            
             <div class="form-row">
                 <label for="studentName">학생 이름:</label>
                 <input type="text" id="studentName" required placeholder="이름을 입력하세요">
             </div>
 
             <input type="hidden" id="subject" value="">
-
-            <div class="form-group">
-                <label for="content">내용:</label>
-                <textarea id="content" required placeholder="여기에 문장을 입력하세요..."></textarea>
-            </div>
-
-            <button type="submit" id="submitBtn">💾 저장하기</button>
         </form>
 
         <div id="message"></div>
@@ -190,9 +179,9 @@
                     .from('student_inputs')
                     .select('id')
                     .eq('user_id', studentName)
-                    .single(); // 단일 레코드만 가져옴
+                    .single();
 
-                if (selectError && selectError.code !== 'PGRST116') { // PGRST116: 레코드가 없다는 에러 코드
+                if (selectError && selectError.code !== 'PGRST116') {
                     throw selectError;
                 }
                 
