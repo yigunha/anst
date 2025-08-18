@@ -1,0 +1,273 @@
+// 나중에 1.html~99.html로 확장할 때 사용할 함수
+        function getUserIdFromFilename() {
+            // 현재 파일명에서 숫자 추출
+            const path = window.location.pathname;
+            const filename = path.split('/').pop();
+            const match = filename.match(/^(\d+)\.html$/);
+            return match ? `student${match[1]}` : 'student1';
+        }
+        
+        // 현재는 기본값 사용, 나중에 getUserIdFromFilename() 사용
+        // const userId = getUserIdFromFilename();<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 입력 시스템</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.38.4/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .student-info {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="student-info" id="studentInfo">
+            학습 일지 작성
+        </div>
+        
+        <h1>학습 내용 입력</h1>
+        
+        <form id="inputForm">
+            <div class="input-group">
+                <label for="subject">과목</label>
+                <input type="text" id="subject" name="subject" placeholder="예: 수학, 영어, 과학..." required>
+            </div>
+            
+            <div class="input-group">
+                <label for="content">학습 내용</label>
+                <textarea id="content" name="content" placeholder="오늘 학습한 내용을 자세히 입력해주세요..." required></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">
+                제출하기
+            </button>
+        </form>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // Supabase 설정
+        const SUPABASE_URL = 'https://svlqqkfkmevcjssarpng.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM';
+        
+        // Supabase 클라이언트 초기화
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 사용자 ID 설정 (나중에 1.html~99.html로 확장 예정)
+        // 현재는 기본값으로 'student1' 사용
+        const userId = 'student1';  // 나중에 파일명에서 추출하도록 변경 예정
+        
+        // 사용자 정보 표시 (현재는 표시하지 않음)
+        // document.getElementById('studentInfo').textContent = `사용자: ${userId}`;
+        
+        // 폼 제출 처리
+        document.getElementById('inputForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('message');
+            const subject = document.getElementById('subject').value.trim();
+            const content = document.getElementById('content').value.trim();
+            
+            if (!subject || !content) {
+                showMessage('모든 항목을 입력해주세요.', 'error');
+                return;
+            }
+            
+            // 로딩 상태
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>제출 중...';
+            
+            try {
+                // Supabase에 데이터 삽입
+                const { data, error } = await supabase
+                    .from('student_inputs') // 새 테이블 이름
+                    .insert([
+                        {
+                            user_id: userId,
+                            subject: subject,
+                            content: content,
+                            created_at: new Date().toISOString()
+                        }
+                    ]);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // 성공 메시지
+                showMessage('성공적으로 제출되었습니다!', 'success');
+                
+                // 폼 초기화
+                document.getElementById('inputForm').reset();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('제출 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                // 로딩 상태 해제
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '제출하기';
+            }
+        });
+        
+        // 메시지 표시 함수
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.classList.add('show');
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Supabase 연결 확인
+        window.addEventListener('load', async function() {
+            console.log('Supabase 연결 준비 완료');
+        });
+    </script>
+</body>
+</html>
