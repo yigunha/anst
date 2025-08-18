@@ -22,8 +22,19 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .form-group {
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 20px;
+        }
+
+        .form-row label {
+            white-space: nowrap; /* 라벨이 줄바꿈되지 않도록 */
+        }
+
+        .form-row input {
+            flex-grow: 1; /* 입력 필드가 남은 공간을 채우도록 */
         }
 
         label {
@@ -106,7 +117,7 @@
 <body>
     <div class="container">
         <form id="studentForm">
-            <div class="form-group">
+            <div class="form-row">
                 <label for="studentName">학생 이름:</label>
                 <input type="text" id="studentName" required placeholder="이름을 입력하세요">
             </div>
@@ -175,4 +186,55 @@
                 localStorage.setItem('studentName', studentName);
 
                 // 동일한 이름의 학생이 이미 존재하는지 확인
-                const { data
+                const { data: existingData, error: selectError } = await supabase
+                    .from('student_inputs')
+                    .select('id')
+                    .eq('user_id', studentName)
+                    .single(); // 단일 레코드만 가져옴
+
+                if (selectError && selectError.code !== 'PGRST116') { // PGRST116: 레코드가 없다는 에러 코드
+                    throw selectError;
+                }
+                
+                let actionType;
+                if (existingData) {
+                    // 이미 존재하는 경우, 업데이트 수행
+                    const { error: updateError } = await supabase
+                        .from('student_inputs')
+                        .update({ content })
+                        .eq('id', existingData.id);
+
+                    if (updateError) {
+                        throw updateError;
+                    }
+                    actionType = '업데이트';
+                } else {
+                    // 존재하지 않는 경우, 새로운 데이터 삽입
+                    const { error: insertError } = await supabase
+                        .from('student_inputs')
+                        .insert([{ user_id: studentName, content }]);
+
+                    if (insertError) {
+                        throw insertError;
+                    }
+                    actionType = '저장';
+                }
+
+                // 성공 처리
+                showMessage(`✅ 성공적으로 ${actionType}되었습니다!`, 'success');
+                
+                // 내용 필드 초기화
+                document.getElementById('content').value = '';
+
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showMessage('❌ 저장 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                // 버튼 상태 복원
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
