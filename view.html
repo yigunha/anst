@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학생 데이터 조회</title>
+    <title>학생 데이터</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -24,10 +24,7 @@
         }
 
         h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2em;
+            display: none; /* 타이틀 삭제 */
         }
 
         .controls {
@@ -61,6 +58,15 @@
             transform: none;
         }
 
+        #deleteSelectedBtn {
+            background: #dc3545;
+            color: white;
+        }
+
+        #deleteSelectedBtn:hover {
+            background: #c82333;
+        }
+
         .search-input {
             flex-grow: 2;
             padding: 10px;
@@ -68,8 +74,48 @@
             border-radius: 6px;
         }
 
-        /* 모바일용 카드 디자인 */
-        .data-grid {
+        /* 데스크톱용 테이블 뷰 */
+        .data-grid-table {
+            display: none;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .content-cell {
+            max-width: 300px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        /* 모바일용 카드 뷰 */
+        .data-grid-mobile {
             display: grid;
             gap: 15px;
         }
@@ -144,100 +190,30 @@
             border: 1px solid #b3d7ff;
         }
 
-        .stats {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .stat-card {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .stat-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 0.8em;
-            opacity: 0.9;
-        }
-
         .no-data {
             text-align: center;
             padding: 40px;
             color: #666;
             font-style: italic;
         }
-        
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            position: absolute;
-            top: 10px;
-            right: 10px;
+
+        /* 모바일에서만 카드 뷰를 표시 */
+        @media (max-width: 767px) {
+            .data-grid-table {
+                display: none;
+            }
+            .data-grid-mobile {
+                display: grid;
+            }
         }
 
+        /* 데스크톱에서만 테이블 뷰를 표시 */
         @media (min-width: 768px) {
-            .container {
-                padding: 40px;
+            .data-grid-table {
+                display: block;
             }
-            h1 {
-                font-size: 2.5em;
-            }
-            .controls {
-                justify-content: flex-start;
-            }
-            .stat-card {
-                padding: 20px;
-                min-width: 150px;
-            }
-            .stat-number {
-                font-size: 2em;
-            }
-            .data-card {
-                display: none; /* 넓은 화면에서는 카드 숨기기 */
-            }
-            .data-grid {
-                display: block; /* 넓은 화면에서는 테이블 보이기 */
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                background: white;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            th {
-                background: linear-gradient(45deg, #667eea, #764ba2);
-                color: white;
-                padding: 15px;
-                text-align: left;
-                font-weight: bold;
-            }
-            td {
-                padding: 15px;
-                border-bottom: 1px solid #eee;
-                vertical-align: top;
-            }
-            tr:hover {
-                background: #f8f9fa;
+            .data-grid-mobile {
+                display: none;
             }
         }
     </style>
@@ -246,30 +222,29 @@
     <div class="container">
         <h1>📊 학생 데이터 조회</h1>
         
-        <div class="stats" id="statsContainer" style="display: none;">
-            <div class="stat-card">
-                <span class="stat-number" id="totalCount">0</span>
-                <span class="stat-label">총 입력 수</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="studentCount">0</span>
-                <span class="stat-label">학생 수</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="todayCount">0</span>
-                <span class="stat-label">오늘 입력</span>
-            </div>
-        </div>
-
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="학생 이름 또는 내용으로 검색..." class="search-input">
+            <input type="text" id="searchInput" placeholder="" class="search-input">
             <button onclick="loadData()">🔄 새로고침</button>
-            <button onclick="exportData()">📥 엑셀 다운로드</button>
+            <button id="deleteSelectedBtn" onclick="deleteSelectedRecords()">🗑️ 선택 삭제</button>
         </div>
 
         <div id="message"></div>
         
-        <div class="data-grid" id="dataGrid">
+        <div class="data-grid-table" id="desktopTable">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">학생 이름</th>
+                        <th>내용</th>
+                        <th style="width: 10%;">체크</th>
+                    </tr>
+                </thead>
+                <tbody id="dataBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="data-grid-mobile" id="mobileGrid">
             </div>
 
         <div id="noData" class="no-data" style="display: none;">
@@ -317,7 +292,6 @@
 
                 allData = data || [];
                 displayData(allData);
-                updateStats(allData);
                 showMessage('✅ 데이터를 성공적으로 불러왔습니다!', 'success');
 
             } catch (error) {
@@ -328,68 +302,31 @@
 
         // 데이터 표시
         function displayData(data) {
-            const dataGrid = document.getElementById('dataGrid');
+            const dataBody = document.getElementById('dataBody');
+            const mobileGrid = document.getElementById('mobileGrid');
             const noData = document.getElementById('noData');
 
             if (!data || data.length === 0) {
-                dataGrid.innerHTML = '';
+                dataBody.innerHTML = '';
+                mobileGrid.innerHTML = '';
                 noData.style.display = 'block';
                 return;
             }
 
             noData.style.display = 'none';
 
-            // 모바일용 카드 뷰
-            dataGrid.innerHTML = data.map(row => `
-                <div class="data-card">
-                    <div class="card-item">
-                        <span class="card-label">학생 이름</span>
-                        <span class="card-value"><strong>${escapeHtml(row.user_id || '익명')}</strong></span>
-                    </div>
-                    <div class="card-item">
-                        <span class="card-label">내용</span>
-                    </div>
-                    <div class="content-card-value">
-                        ${escapeHtml(row.content || '')}
-                    </div>
-                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
-                </div>
+            // 데스크톱용 테이블 뷰
+            dataBody.innerHTML = data.map(row => `
+                <tr>
+                    <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
+                    <td class="content-cell">${escapeHtml(row.content || '')}</td>
+                    <td>
+                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
+                    </td>
+                </tr>
             `).join('');
-            
-            // 데스크톱용 테이블 뷰 (CSS media query로 표시/숨김)
-            const tableHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>학생 이름</th>
-                            <th>내용</th>
-                            <th>작업</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.map(row => `
-                            <tr>
-                                <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
-                                <td class="content-cell">${escapeHtml(row.content || '')}</td>
-                                <td>
-                                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            const desktopTable = document.createElement('div');
-            desktopTable.innerHTML = tableHtml;
-            desktopTable.className = 'data-grid'; // 클래스명을 사용하여 CSS media query 적용
-            
-            // 기존 콘텐츠를 지우고 새로운 콘텐츠로 대체
-            dataGrid.innerHTML = '';
-            dataGrid.appendChild(desktopTable);
 
-            // 모바일 뷰와 데스크톱 뷰를 동시에 생성 후 CSS 미디어 쿼리로 제어
-            const mobileGrid = document.createElement('div');
-            mobileGrid.className = 'data-grid';
+            // 모바일용 카드 뷰
             mobileGrid.innerHTML = data.map(row => `
                 <div class="data-card">
                     <div class="card-item">
@@ -402,40 +339,43 @@
                     <div class="content-card-value">
                         ${escapeHtml(row.content || '')}
                     </div>
-                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
+                    <div style="position: absolute; top: 10px; right: 10px;">
+                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
+                    </div>
                 </div>
             `).join('');
-
-            dataGrid.innerHTML = ''; // 기존 내용 삭제
-            dataGrid.appendChild(desktopTable);
-            dataGrid.appendChild(mobileGrid); // 모바일 그리드 추가
         }
 
-        // 통계 업데이트
-        function updateStats(data) {
-            const statsContainer = document.getElementById('statsContainer');
-            
-            if (!data || data.length === 0) {
-                statsContainer.style.display = 'none';
+        // 선택 항목 삭제
+        async function deleteSelectedRecords() {
+            const checkedBoxes = document.querySelectorAll('.delete-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                showMessage('삭제할 항목을 하나 이상 선택하세요.', 'error');
                 return;
             }
 
-            statsContainer.style.display = 'flex';
+            if (!confirm(`선택된 ${checkedBoxes.length}개의 데이터를 정말로 삭제하시겠습니까?`)) {
+                return;
+            }
 
-            // 총 입력 수
-            document.getElementById('totalCount').textContent = data.length;
+            const idsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
+            
+            try {
+                const { error } = await supabase
+                    .from('student_inputs')
+                    .delete()
+                    .in('id', idsToDelete);
 
-            // 고유 학생 수
-            const uniqueStudents = new Set(data.map(row => row.user_id)).size;
-            document.getElementById('studentCount').textContent = uniqueStudents;
+                if (error) {
+                    throw error;
+                }
 
-            // 오늘 입력 수
-            const today = new Date().toDateString();
-            const todayCount = data.filter(row => {
-                const rowDate = new Date(row.created_at).toDateString();
-                return rowDate === today;
-            }).length;
-            document.getElementById('todayCount').textContent = todayCount;
+                showMessage('✅ 선택된 데이터가 삭제되었습니다!', 'success');
+                loadData(); // 데이터 다시 로드
+            } catch (error) {
+                console.error('삭제 오류:', error);
+                showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
         }
 
         // 검색 기능
@@ -448,7 +388,6 @@
             }
 
             const filteredData = allData.filter(row => 
-                (row.user_id && row.user_id.toLowerCase().includes(searchTerm)) ||
                 (row.content && row.content.toLowerCase().includes(searchTerm))
             );
 
@@ -457,66 +396,6 @@
 
         // 검색 입력 이벤트
         document.getElementById('searchInput').addEventListener('input', filterData);
-
-        // 레코드 삭제
-        async function deleteRecord(id) {
-            if (!confirm('정말로 이 데이터를 삭제하시겠습니까?')) {
-                return;
-            }
-
-            if (!supabase) {
-                showMessage('Supabase가 초기화되지 않았습니다!', 'error');
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('student_inputs')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    throw error;
-                }
-
-                showMessage('✅ 데이터가 삭제되었습니다!', 'success');
-                loadData(); // 데이터 다시 로드
-            } catch (error) {
-                console.error('삭제 오류:', error);
-                showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // 엑셀 다운로드
-        function exportData() {
-            if (!allData || allData.length === 0) {
-                showMessage('다운로드할 데이터가 없습니다!', 'error');
-                return;
-            }
-
-            // CSV 형식으로 데이터 변환
-            const headers = ['학생이름', '내용'];
-            const csvData = [
-                headers.join(','),
-                ...allData.map(row => [
-                    `"${(row.user_id || '').replace(/"/g, '""')}"`,
-                    `"${(row.content || '').replace(/"/g, '""')}"`
-                ].join(','))
-            ].join('\n');
-
-            // 파일 다운로드
-            const blob = new Blob(['\uFEFF' + csvData], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `학생데이터_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showMessage('✅ 엑셀 파일이 다운로드되었습니다!', 'success');
-        }
 
         // 유틸리티 함수들
         function escapeHtml(text) {
