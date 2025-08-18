@@ -19,7 +19,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            padding: 40px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
@@ -27,62 +27,27 @@
             text-align: center;
             color: #333;
             margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-
-        .config-section {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .config-section h3 {
-            margin-top: 0;
-            color: #495057;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
+            font-size: 2em;
         }
 
         .controls {
             display: flex;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 10px 20px;
+            font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
+            flex-grow: 1;
         }
 
         button:hover {
@@ -97,52 +62,60 @@
         }
 
         .search-input {
-            flex: 1;
-            min-width: 200px;
+            flex-grow: 2;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
         }
 
+        /* 모바일용 카드 디자인 */
         .data-grid {
-            overflow-x: auto;
-            margin-top: 20px;
+            display: grid;
+            gap: 15px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        th {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: bold;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: top;
-        }
-
-        tr:hover {
+        .data-card {
             background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-left: 5px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-3px);
         }
 
-        .content-cell {
-            max-width: 300px;
-            word-wrap: break-word;
-            line-height: 1.4;
+        .card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .card-label {
+            font-weight: bold;
+            color: #555;
+            min-width: 80px;
         }
 
-        .date-cell {
-            white-space: nowrap;
+        .card-value {
+            flex-grow: 1;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .content-card-value {
+            font-weight: normal;
             font-size: 0.9em;
-            color: #666;
+            text-align: left;
+            margin-top: 10px;
+            line-height: 1.4;
+            color: #333;
+            word-wrap: break-word;
         }
 
         .message {
@@ -173,29 +146,30 @@
 
         .stats {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .stat-card {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
             flex: 1;
-            min-width: 150px;
+            min-width: 120px;
         }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
             display: block;
         }
 
         .stat-label {
-            font-size: 0.9em;
+            font-size: 0.8em;
             opacity: 0.9;
         }
 
@@ -205,7 +179,7 @@
             color: #666;
             font-style: italic;
         }
-
+        
         .delete-btn {
             background: #dc3545;
             color: white;
@@ -214,23 +188,56 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
 
-        .delete-btn:hover {
-            background: #c82333;
-        }
-
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
             .container {
-                padding: 20px;
+                padding: 40px;
             }
-            
+            h1 {
+                font-size: 2.5em;
+            }
             .controls {
-                flex-direction: column;
+                justify-content: flex-start;
             }
-            
-            .stats {
-                flex-direction: column;
+            .stat-card {
+                padding: 20px;
+                min-width: 150px;
+            }
+            .stat-number {
+                font-size: 2em;
+            }
+            .data-card {
+                display: none; /* 넓은 화면에서는 카드 숨기기 */
+            }
+            .data-grid {
+                display: block; /* 넓은 화면에서는 테이블 보이기 */
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            th {
+                background: linear-gradient(45deg, #667eea, #764ba2);
+                color: white;
+                padding: 15px;
+                text-align: left;
+                font-weight: bold;
+            }
+            td {
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                vertical-align: top;
+            }
+            tr:hover {
+                background: #f8f9fa;
             }
         }
     </style>
@@ -239,20 +246,6 @@
     <div class="container">
         <h1>📊 학생 데이터 조회</h1>
         
-        <!-- Supabase 설정 섹션 -->
-        <div class="config-section">
-            <h3>🔧 Supabase 설정</h3>
-            <div class="form-group">
-                <label for="supabaseUrl">Supabase URL:</label>
-                <input type="url" id="supabaseUrl" placeholder="https://your-project.supabase.co">
-            </div>
-            <div class="form-group">
-                <label for="supabaseKey">Supabase Anon Key:</label>
-                <input type="text" id="supabaseKey" placeholder="eyJ...">
-            </div>
-        </div>
-
-        <!-- 통계 카드 -->
         <div class="stats" id="statsContainer" style="display: none;">
             <div class="stat-card">
                 <span class="stat-number" id="totalCount">0</span>
@@ -268,31 +261,16 @@
             </div>
         </div>
 
-        <!-- 검색 및 제어 -->
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="학생 이름 또는 주제로 검색..." class="search-input">
+            <input type="text" id="searchInput" placeholder="학생 이름 또는 내용으로 검색..." class="search-input">
             <button onclick="loadData()">🔄 새로고침</button>
             <button onclick="exportData()">📥 엑셀 다운로드</button>
         </div>
 
         <div id="message"></div>
-
-        <!-- 데이터 테이블 -->
-        <div class="data-grid">
-            <table id="dataTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>학생 이름</th>
-                        <th>주제</th>
-                        <th>내용</th>
-                        <th>작성일시</th>
-                        <th>작업</th>
-                    </tr>
-                </thead>
-                <tbody id="dataBody">
-                </tbody>
-            </table>
-        </div>
+        
+        <div class="data-grid" id="dataGrid">
+            </div>
 
         <div id="noData" class="no-data" style="display: none;">
             📝 아직 저장된 데이터가 없습니다.
@@ -300,27 +278,14 @@
     </div>
 
     <script>
-        let supabase = null;
-        let allData = [];
+        // Supabase 설정 값
+        const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM";
 
         // Supabase 클라이언트 초기화
-        function initializeSupabase() {
-            const url = document.getElementById('supabaseUrl').value.trim();
-            const key = document.getElementById('supabaseKey').value.trim();
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            if (!url || !key) {
-                showMessage('Supabase URL과 API Key를 입력해주세요!', 'error');
-                return false;
-            }
-
-            try {
-                supabase = window.supabase.createClient(url, key);
-                return true;
-            } catch (error) {
-                showMessage('Supabase 설정에 오류가 있습니다: ' + error.message, 'error');
-                return false;
-            }
-        }
+        let allData = [];
 
         // 메시지 표시 함수
         function showMessage(text, type) {
@@ -338,16 +303,12 @@
 
         // 데이터 로드
         async function loadData() {
-            if (!initializeSupabase()) {
-                return;
-            }
-
             try {
                 showMessage('데이터를 불러오는 중...', 'loading');
 
                 const { data, error } = await supabase
                     .from('student_inputs')
-                    .select('*')
+                    .select('id, user_id, content')
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -367,30 +328,87 @@
 
         // 데이터 표시
         function displayData(data) {
-            const tableBody = document.getElementById('dataBody');
-            const table = document.getElementById('dataTable');
+            const dataGrid = document.getElementById('dataGrid');
             const noData = document.getElementById('noData');
 
             if (!data || data.length === 0) {
-                table.style.display = 'none';
+                dataGrid.innerHTML = '';
                 noData.style.display = 'block';
                 return;
             }
 
-            table.style.display = 'table';
             noData.style.display = 'none';
 
-            tableBody.innerHTML = data.map(row => `
-                <tr>
-                    <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
-                    <td>${escapeHtml(row.subject || '')}</td>
-                    <td class="content-cell">${escapeHtml(row.content || '')}</td>
-                    <td class="date-cell">${formatDate(row.created_at)}</td>
-                    <td>
-                        <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
-                    </td>
-                </tr>
+            // 모바일용 카드 뷰
+            dataGrid.innerHTML = data.map(row => `
+                <div class="data-card">
+                    <div class="card-item">
+                        <span class="card-label">학생 이름</span>
+                        <span class="card-value"><strong>${escapeHtml(row.user_id || '익명')}</strong></span>
+                    </div>
+                    <div class="card-item">
+                        <span class="card-label">내용</span>
+                    </div>
+                    <div class="content-card-value">
+                        ${escapeHtml(row.content || '')}
+                    </div>
+                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
+                </div>
             `).join('');
+            
+            // 데스크톱용 테이블 뷰 (CSS media query로 표시/숨김)
+            const tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>학생 이름</th>
+                            <th>내용</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(row => `
+                            <tr>
+                                <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
+                                <td class="content-cell">${escapeHtml(row.content || '')}</td>
+                                <td>
+                                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            const desktopTable = document.createElement('div');
+            desktopTable.innerHTML = tableHtml;
+            desktopTable.className = 'data-grid'; // 클래스명을 사용하여 CSS media query 적용
+            
+            // 기존 콘텐츠를 지우고 새로운 콘텐츠로 대체
+            dataGrid.innerHTML = '';
+            dataGrid.appendChild(desktopTable);
+
+            // 모바일 뷰와 데스크톱 뷰를 동시에 생성 후 CSS 미디어 쿼리로 제어
+            const mobileGrid = document.createElement('div');
+            mobileGrid.className = 'data-grid';
+            mobileGrid.innerHTML = data.map(row => `
+                <div class="data-card">
+                    <div class="card-item">
+                        <span class="card-label">학생 이름</span>
+                        <span class="card-value"><strong>${escapeHtml(row.user_id || '익명')}</strong></span>
+                    </div>
+                    <div class="card-item">
+                        <span class="card-label">내용</span>
+                    </div>
+                    <div class="content-card-value">
+                        ${escapeHtml(row.content || '')}
+                    </div>
+                    <button class="delete-btn" onclick="deleteRecord(${row.id})">삭제</button>
+                </div>
+            `).join('');
+
+            dataGrid.innerHTML = ''; // 기존 내용 삭제
+            dataGrid.appendChild(desktopTable);
+            dataGrid.appendChild(mobileGrid); // 모바일 그리드 추가
         }
 
         // 통계 업데이트
@@ -431,7 +449,6 @@
 
             const filteredData = allData.filter(row => 
                 (row.user_id && row.user_id.toLowerCase().includes(searchTerm)) ||
-                (row.subject && row.subject.toLowerCase().includes(searchTerm)) ||
                 (row.content && row.content.toLowerCase().includes(searchTerm))
             );
 
@@ -478,14 +495,12 @@
             }
 
             // CSV 형식으로 데이터 변환
-            const headers = ['학생이름', '주제', '내용', '작성일시'];
+            const headers = ['학생이름', '내용'];
             const csvData = [
                 headers.join(','),
                 ...allData.map(row => [
                     `"${(row.user_id || '').replace(/"/g, '""')}"`,
-                    `"${(row.subject || '').replace(/"/g, '""')}"`,
-                    `"${(row.content || '').replace(/"/g, '""')}"`,
-                    `"${formatDate(row.created_at)}"`
+                    `"${(row.content || '').replace(/"/g, '""')}"`
                 ].join(','))
             ].join('\n');
 
@@ -510,68 +525,8 @@
             return div.innerHTML;
         }
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
-        }
-
-        // 설정 저장을 위한 메모리 변수
-        let savedConfig = {
-            url: '',
-            key: ''
-        };
-
-        // 설정 변경시 메모리에 저장
-        document.getElementById('supabaseUrl').addEventListener('change', (e) => {
-            savedConfig.url = e.target.value;
-        });
-
-        document.getElementById('supabaseKey').addEventListener('change', (e) => {
-            savedConfig.key = e.target.value;
-        });
-
         // 페이지 로드 시 자동 데이터 로드
-        window.addEventListener('load', () => {
-            // 설정이 있으면 자동으로 데이터 로드
-            setTimeout(() => {
-                const url = document.getElementById('supabaseUrl').value;
-                const key = document.getElementById('supabaseKey').value;
-                if (url && key) {
-                    loadData();
-                }
-            }, 500);
-        });
-
-        // 실시간 업데이트 (선택사항)
-        function enableRealTimeUpdates() {
-            if (!supabase) return;
-
-            const subscription = supabase
-                .channel('student_inputs')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'student_inputs' }, 
-                    (payload) => {
-                        console.log('실시간 업데이트:', payload);
-                        loadData(); // 데이터 다시 로드
-                    }
-                )
-                .subscribe();
-        }
-
-        // Enter 키로 검색
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                filterData();
-            }
-        });
+        window.addEventListener('load', loadData);
     </script>
 </body>
 </html>
