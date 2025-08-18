@@ -195,6 +195,25 @@
             top: 10px;
             right: 10px;
         }
+
+        /* 미디어 쿼리: 768px 이상일 때 데스크톱 뷰 */
+        @media (min-width: 768px) {
+            .data-grid-table {
+                display: block;
+            }
+            .data-grid-mobile {
+                display: none;
+            }
+        }
+
+        /* JavaScript로 감지한 가로 모드일 때 무조건 데스크톱 뷰 */
+        .landscape-view .data-grid-table {
+            display: block !important;
+        }
+        
+        .landscape-view .data-grid-mobile {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -229,10 +248,10 @@
     </div>
 
     <script>
-        // Vercel 환경 변수에서 값 가져오기
-        const SUPABASE_URL = process.env.SUPABASE_URL;
-        const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-        
+        // Supabase 설정 값
+        const SUPABASE_URL = "https://svlqqkfkmevcjssarpng.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM";
+
         // Supabase 클라이언트 초기화
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -278,32 +297,21 @@
 
         // 데이터 표시
         function displayData(data) {
-            const desktopTable = document.getElementById('desktopTable');
+            const dataBody = document.getElementById('dataBody');
             const mobileGrid = document.getElementById('mobileGrid');
             const noData = document.getElementById('noData');
 
             if (!data || data.length === 0) {
-                desktopTable.style.display = 'none';
-                mobileGrid.style.display = 'none';
+                dataBody.innerHTML = '';
+                mobileGrid.innerHTML = '';
                 noData.style.display = 'block';
                 return;
             }
 
             noData.style.display = 'none';
 
-            // 화면 방향에 따라 뷰 전환
-            if (window.innerHeight > window.innerWidth) {
-                // 세로 모드 (Portrait)
-                desktopTable.style.display = 'none';
-                mobileGrid.style.display = 'grid';
-            } else {
-                // 가로 모드 (Landscape)
-                desktopTable.style.display = 'block';
-                mobileGrid.style.display = 'none';
-            }
-
             // 데스크톱용 테이블 뷰
-            document.getElementById('dataBody').innerHTML = data.map(row => `
+            dataBody.innerHTML = data.map(row => `
                 <tr>
                     <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
                     <td class="content-cell">${escapeHtml(row.content || '')}</td>
@@ -383,6 +391,7 @@
                 }
 
                 showMessage('✅ 선택된 데이터가 삭제되었습니다!', 'success');
+                // 실시간 기능이 있으므로 굳이 loadData()를 다시 호출할 필요가 없습니다.
             } catch (error) {
                 console.error('삭제 오류:', error);
                 showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
@@ -396,9 +405,13 @@
             return div.innerHTML;
         }
 
-        // 화면 방향 감지 및 뷰 업데이트
-        function handleOrientationChange() {
-            loadData();
+        // 화면 방향 감지 및 클래스 추가
+        function checkOrientation() {
+            if (window.matchMedia("(orientation: landscape)").matches) {
+                document.body.classList.add('landscape-view');
+            } else {
+                document.body.classList.remove('landscape-view');
+            }
         }
         
         // 실시간 리스너 추가
@@ -411,7 +424,9 @@
 
         // 페이지 로드 시 및 화면 방향 변경 시 함수 호출
         window.addEventListener('load', loadData);
-        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('load', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
     </script>
 </body>
 </html>
