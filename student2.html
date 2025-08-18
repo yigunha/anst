@@ -158,12 +158,25 @@
             }
         }
 
-        // 폼 제출 처리
+        // 1. 페이지 로드 시 로컬 스토리지에서 학생 이름 불러오기
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedStudentName = localStorage.getItem('studentName');
+            if (savedStudentName) {
+                document.getElementById('studentName').value = savedStudentName;
+            }
+        });
+
+        // 2. 폼 제출 처리
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const submitBtn = document.getElementById('submitBtn');
             const originalText = submitBtn.textContent;
+            
+            // 입력값 가져오기
+            const studentName = document.getElementById('studentName').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const content = document.getElementById('content').value.trim();
 
             try {
                 // 로딩 상태
@@ -171,50 +184,28 @@
                 submitBtn.textContent = '저장 중...';
                 showMessage('데이터를 저장하고 있습니다...', 'loading');
 
-                // 입력값 가져오기
-                const studentName = document.getElementById('studentName').value.trim();
-                const subject = document.getElementById('subject').value.trim();
-                const content = document.getElementById('content').value.trim();
-                
-                // 1. 동일한 이름의 학생이 이미 존재하는지 확인
-                const { data: existingData, error: selectError } = await supabase
+                // 3. 로컬 스토리지에 학생 이름 저장
+                localStorage.setItem('studentName', studentName);
+
+                // Supabase에 데이터 저장
+                const { data, error } = await supabase
                     .from('student_inputs')
-                    .select('id')
-                    .eq('user_id', studentName)
-                    .single(); // 단일 레코드만 가져옴
+                    .insert([{ user_id: studentName, subject, content }])
+                    .select();
 
-                if (selectError && selectError.code !== 'PGRST116') { // PGRST116: 레코드가 없다는 에러
-                    throw selectError;
-                }
-                
-                let actionType;
-                if (existingData) {
-                    // 2. 이미 존재하는 경우, 업데이트 수행
-                    const { error: updateError } = await supabase
-                        .from('student_inputs')
-                        .update({ subject, content })
-                        .eq('id', existingData.id);
-
-                    if (updateError) {
-                        throw updateError;
-                    }
-                    actionType = '업데이트';
-                } else {
-                    // 3. 존재하지 않는 경우, 새로운 데이터 삽입
-                    const { error: insertError } = await supabase
-                        .from('student_inputs')
-                        .insert([{ user_id: studentName, subject, content }]);
-
-                    if (insertError) {
-                        throw insertError;
-                    }
-                    actionType = '저장';
+                if (error) {
+                    throw error;
                 }
 
                 // 성공 처리
-                showMessage(`✅ 성공적으로 ${actionType}되었습니다!`, 'success');
-                document.getElementById('studentForm').reset();
+                showMessage('✅ 성공적으로 저장되었습니다!', 'success');
                 
+                // 4. 이름 필드를 제외한 나머지 필드 초기화
+                document.getElementById('subject').value = '';
+                document.getElementById('content').value = '';
+
+                console.log('저장된 데이터:', data);
+
             } catch (error) {
                 console.error('저장 오류:', error);
                 showMessage('❌ 저장 중 오류가 발생했습니다: ' + error.message, 'error');
