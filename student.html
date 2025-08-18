@@ -1,130 +1,94 @@
-// 나중에 1.html~99.html로 확장할 때 사용할 함수
-        function getUserIdFromFilename() {
-            // 현재 파일명에서 숫자 추출
-            const path = window.location.pathname;
-            const filename = path.split('/').pop();
-            const match = filename.match(/^(\d+)\.html$/);
-            return match ? `student${match[1]}` : 'student1';
-        }
-        
-        // 현재는 기본값 사용, 나중에 getUserIdFromFilename() 사용
-        // const userId = getUserIdFromFilename();<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학생 입력 시스템</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.38.4/umd/supabase.min.js"></script>
+    <title>학생 입력 폼</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: white;
+            border-radius: 15px;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .student-info {
-            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            font-size: 18px;
-            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         h1 {
+            text-align: center;
             color: #333;
             margin-bottom: 30px;
-            font-size: 28px;
+            font-size: 2.5em;
         }
 
-        .input-group {
-            margin-bottom: 25px;
-            text-align: left;
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
+            font-weight: bold;
             color: #555;
-            font-weight: 600;
         }
 
-        input[type="text"], textarea {
+        input, textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         textarea {
-            min-height: 120px;
+            height: 150px;
             resize: vertical;
         }
 
-        .submit-btn {
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 15px 40px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
             width: 100%;
             margin-top: 10px;
         }
 
-        .submit-btn:hover {
+        button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .submit-btn:disabled {
-            opacity: 0.6;
+        button:disabled {
+            background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
 
         .message {
-            padding: 15px;
-            border-radius: 10px;
             margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
             font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .success {
@@ -139,134 +103,171 @@
             border: 1px solid #f5c6cb;
         }
 
-        .message.show {
-            opacity: 1;
-        }
-
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .config-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        .config-section small {
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="student-info" id="studentInfo">
-            학습 일지 작성
+        <h1>📝 학생 문장 입력</h1>
+        
+        <!-- Supabase 설정 섹션 -->
+        <div class="config-section">
+            <h3>🔧 Supabase 설정</h3>
+            <div class="form-group">
+                <label for="supabaseUrl">Supabase URL:</label>
+                <input type="url" id="supabaseUrl" placeholder="https://your-project.supabase.co">
+                <small>예: https://xyzabc123.supabase.co</small>
+            </div>
+            <div class="form-group">
+                <label for="supabaseKey">Supabase Anon Key:</label>
+                <input type="text" id="supabaseKey" placeholder="eyJ...">
+                <small>프로젝트 설정 → API에서 anon/public key를 복사하세요</small>
+            </div>
         </div>
-        
-        <h1>학습 내용 입력</h1>
-        
-        <form id="inputForm">
-            <div class="input-group">
-                <label for="subject">과목</label>
-                <input type="text" id="subject" name="subject" placeholder="예: 수학, 영어, 과학..." required>
+
+        <!-- 데이터 입력 폼 -->
+        <form id="studentForm">
+            <div class="form-group">
+                <label for="studentName">학생 이름:</label>
+                <input type="text" id="studentName" required placeholder="이름을 입력하세요">
             </div>
-            
-            <div class="input-group">
-                <label for="content">학습 내용</label>
-                <textarea id="content" name="content" placeholder="오늘 학습한 내용을 자세히 입력해주세요..." required></textarea>
+
+            <div class="form-group">
+                <label for="subject">주제:</label>
+                <input type="text" id="subject" required placeholder="문장의 주제를 입력하세요">
             </div>
-            
-            <button type="submit" class="submit-btn" id="submitBtn">
-                제출하기
-            </button>
+
+            <div class="form-group">
+                <label for="content">내용:</label>
+                <textarea id="content" required placeholder="여기에 문장을 입력하세요..."></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn">💾 저장하기</button>
         </form>
-        
-        <div id="message" class="message"></div>
+
+        <div id="message"></div>
     </div>
 
     <script>
-        // Supabase 설정
-        const SUPABASE_URL = 'https://svlqqkfkmevcjssarpng.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHFxa2ZrbWV2Y2pzc2FycG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjE5MDUsImV4cCI6MjA2NjQzNzkwNX0.bB8oanmqsBtoL3H4xwczP6khaojvnu02VWmtm0xY_yM';
-        
+        let supabase = null;
+
         // Supabase 클라이언트 초기화
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // 사용자 ID 설정 (나중에 1.html~99.html로 확장 예정)
-        // 현재는 기본값으로 'student1' 사용
-        const userId = 'student1';  // 나중에 파일명에서 추출하도록 변경 예정
-        
-        // 사용자 정보 표시 (현재는 표시하지 않음)
-        // document.getElementById('studentInfo').textContent = `사용자: ${userId}`;
-        
-        // 폼 제출 처리
-        document.getElementById('inputForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const messageDiv = document.getElementById('message');
-            const subject = document.getElementById('subject').value.trim();
-            const content = document.getElementById('content').value.trim();
-            
-            if (!subject || !content) {
-                showMessage('모든 항목을 입력해주세요.', 'error');
-                return;
+        function initializeSupabase() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+
+            if (!url || !key) {
+                return false;
             }
-            
-            // 로딩 상태
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading"></span>제출 중...';
-            
+
             try {
-                // Supabase에 데이터 삽입
-                const { data, error } = await supabase
-                    .from('student_inputs') // 새 테이블 이름
-                    .insert([
-                        {
-                            user_id: userId,
-                            subject: subject,
-                            content: content,
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
-                
-                if (error) {
-                    throw error;
-                }
-                
-                // 성공 메시지
-                showMessage('성공적으로 제출되었습니다!', 'success');
-                
-                // 폼 초기화
-                document.getElementById('inputForm').reset();
-                
+                supabase = window.supabase.createClient(url, key);
+                return true;
             } catch (error) {
-                console.error('Error:', error);
-                showMessage('제출 중 오류가 발생했습니다: ' + error.message, 'error');
-            } finally {
-                // 로딩 상태 해제
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '제출하기';
+                showMessage('Supabase 설정에 오류가 있습니다: ' + error.message, 'error');
+                return false;
             }
-        });
-        
+        }
+
         // 메시지 표시 함수
         function showMessage(text, type) {
             const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
             messageDiv.className = `message ${type}`;
-            messageDiv.classList.add('show');
-            
-            setTimeout(() => {
-                messageDiv.classList.remove('show');
-            }, 5000);
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
         }
-        
-        // Supabase 연결 확인
-        window.addEventListener('load', async function() {
-            console.log('Supabase 연결 준비 완료');
+
+        // 폼 제출 처리
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Supabase 초기화 확인
+            if (!initializeSupabase()) {
+                showMessage('먼저 Supabase 설정을 완료해주세요!', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+
+            try {
+                // 로딩 상태
+                submitBtn.disabled = true;
+                submitBtn.textContent = '저장 중...';
+                showMessage('데이터를 저장하고 있습니다...', 'loading');
+
+                // 입력값 가져오기
+                const formData = {
+                    user_id: document.getElementById('studentName').value.trim(), // 학생 이름을 user_id로 사용
+                    subject: document.getElementById('subject').value.trim(),
+                    content: document.getElementById('content').value.trim()
+                };
+
+                // Supabase에 데이터 저장
+                const { data, error } = await supabase
+                    .from('student_inputs')
+                    .insert([formData])
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+
+                // 성공 처리
+                showMessage('✅ 성공적으로 저장되었습니다!', 'success');
+                document.getElementById('studentForm').reset();
+                console.log('저장된 데이터:', data);
+
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showMessage('❌ 저장 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                // 버튼 상태 복원
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // 설정 저장을 위한 메모리 변수
+        let savedConfig = {
+            url: '',
+            key: ''
+        };
+
+        // 설정 변경시 메모리에 저장
+        document.getElementById('supabaseUrl').addEventListener('change', (e) => {
+            savedConfig.url = e.target.value;
+        });
+
+        document.getElementById('supabaseKey').addEventListener('change', (e) => {
+            savedConfig.key = e.target.value;
         });
     </script>
 </body>
