@@ -247,8 +247,8 @@
     <div class="container">
         <div class="controls">
             <button id="toggleNameBtn" onclick="toggleNames()">이름 보기</button>
-            <button onclick="deleteAllRecords()">❌ 전체 삭제</button>
-            <button id="deleteSelectedBtn" onclick="deleteSelectedRecords()">🗑️ 선택 삭제</button>
+            <button id="selectAllBtn" onclick="selectAllRecords()">✅ 전체 선택</button>
+            <button id="deleteSelectedBtn" onclick="deleteSelectedRecords()">🗑️ 삭제</button>
         </div>
 
         <div id="message"></div>
@@ -345,7 +345,7 @@
                     <td class="name-td ${namesVisible ? '' : 'name-hidden'}" data-name-id="name-${row.id}"><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
                     <td class="content-cell">${escapeHtml(row.content || '')}</td>
                     <td class="delete-checkbox-cell">
-                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
+                        <input type="checkbox" class="delete-checkbox desktop-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
                     </td>
                 </tr>
             `).join('');
@@ -355,7 +355,7 @@
                 <div class="data-card">
                     <div class="card-header-row">
                         <div class="name-value ${namesVisible ? '' : 'name-hidden'}" data-name-id="name-${row.id}">${escapeHtml(row.user_id || '익명')}</div>
-                        <input type="checkbox" class="delete-checkbox card-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
+                        <input type="checkbox" class="delete-checkbox mobile-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
                     </div>
                     <div class="card-content-section">
                         <div class="content-text">${escapeHtml(row.content || '')}</div>
@@ -366,28 +366,55 @@
             addCheckboxListeners();
         }
 
-        // 체크박스 이벤트 리스너 추가 (이름 표시 기능 분리)
+        // 체크박스 이벤트 리스너 추가
         function addCheckboxListeners() {
             const selectAllDesktop = document.getElementById('selectAllDesktop');
             const checkboxes = document.querySelectorAll('.delete-checkbox');
+            const selectAllBtn = document.getElementById('selectAllBtn');
 
             if (selectAllDesktop) {
                 selectAllDesktop.addEventListener('change', (e) => {
+                    const checked = e.target.checked;
                     checkboxes.forEach(checkbox => {
-                        checkbox.checked = e.target.checked;
+                        checkbox.checked = checked;
                     });
+                    updateSelectAllBtnText();
                 });
             }
 
             checkboxes.forEach(checkbox => {
                 // 개별 체크박스에 대한 이벤트 리스너
-                checkbox.addEventListener('change', () => {
+                checkbox.addEventListener('change', (e) => {
+                    // 같은 ID를 가진 다른 체크박스 동기화
+                    const id = e.target.dataset.id;
+                    const relatedCheckboxes = document.querySelectorAll(`.delete-checkbox[data-id="${id}"]`);
+                    relatedCheckboxes.forEach(cb => {
+                        cb.checked = e.target.checked;
+                    });
+                    
                     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
                     if (selectAllDesktop) {
                         selectAllDesktop.checked = allChecked;
                     }
+                    updateSelectAllBtnText();
                 });
             });
+            updateSelectAllBtnText();
+        }
+
+        // 전체 선택 버튼 및 헤더 체크박스 텍스트 업데이트
+        function updateSelectAllBtnText() {
+            const checkboxes = document.querySelectorAll('.delete-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const selectAllDesktop = document.getElementById('selectAllDesktop');
+
+            if (selectAllBtn) {
+                selectAllBtn.textContent = allChecked ? '✅ 선택 해제' : '✅ 전체 선택';
+            }
+            if (selectAllDesktop) {
+                selectAllDesktop.checked = allChecked;
+            }
         }
         
         // 이름 보기/숨기기 기능
@@ -395,7 +422,7 @@
             namesVisible = !namesVisible;
             const nameElements = document.querySelectorAll('.name-td, .name-value');
             const toggleBtn = document.getElementById('toggleNameBtn');
-            const nameHeader = document.getElementById('nameHeader'); // 이름 헤더 추가
+            const nameHeader = document.getElementById('nameHeader');
             
             nameElements.forEach(element => {
                 if (namesVisible) {
@@ -405,7 +432,6 @@
                 }
             });
 
-            // 이름 헤더 토글
             if (nameHeader) {
                 if (namesVisible) {
                     nameHeader.classList.remove('name-hidden');
@@ -417,6 +443,17 @@
             toggleBtn.textContent = namesVisible ? '이름 숨기기' : '이름 보기';
         }
 
+        // 전체 선택/해제 기능
+        function selectAllRecords() {
+            const checkboxes = document.querySelectorAll('.delete-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+            updateSelectAllBtnText();
+        }
+
         // 선택 항목 삭제
         async function deleteSelectedRecords() {
             const checkedBoxes = document.querySelectorAll('.delete-checkbox:checked');
@@ -425,10 +462,19 @@
                 return;
             }
 
-            const idsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
-            const userIdsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.userId);
+            const uniqueItems = new Map();
+            checkedBoxes.forEach(checkbox => {
+                const id = checkbox.dataset.id;
+                const userId = checkbox.dataset.userId || '익명';
+                if (!uniqueItems.has(id)) {
+                    uniqueItems.set(id, { id, userId });
+                }
+            });
 
-            if (!confirm(`선택된 ${checkedBoxes.length}개의 데이터를 정말로 삭제하시겠습니까?\n\n- ${userIdsToDelete.join('\n- ')}`)) {
+            const uniqueIds = Array.from(uniqueItems.values()).map(item => item.id);
+            const userIdsToDelete = Array.from(uniqueItems.values()).map(item => item.userId).filter(Boolean);
+            
+            if (!confirm(`선택된 ${uniqueIds.length}개의 데이터를 정말로 삭제하시겠습니까?\n\n- ${userIdsToDelete.join('\n- ')}`)) {
                 return;
             }
 
@@ -436,40 +482,16 @@
                 const { error } = await supabase
                     .from('student_inputs')
                     .delete()
-                    .in('id', idsToDelete);
+                    .in('id', uniqueIds);
 
                 if (error) {
                     throw error;
                 }
 
                 showMessage('✅ 선택된 데이터가 삭제되었습니다!', 'success');
-                // 실시간 기능이 있으므로 굳이 loadData()를 다시 호출할 필요가 없습니다.
             } catch (error) {
                 console.error('삭제 오류:', error);
                 showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // 전체 삭제
-        async function deleteAllRecords() {
-            if (!confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('student_inputs')
-                    .delete()
-                    .neq('id', 'null'); // 모든 데이터 삭제를 위한 조건
-
-                if (error) {
-                    throw error;
-                }
-
-                showMessage('✅ 모든 데이터가 삭제되었습니다!', 'success');
-            } catch (error) {
-                console.error('전체 삭제 오류:', error);
-                showMessage('❌ 전체 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
             }
         }
 
@@ -484,7 +506,7 @@
         const student_inputs_channel = supabase.channel('public:student_inputs')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'student_inputs' }, payload => {
             console.log('실시간 변경 감지:', payload);
-            loadData(); // 변경 사항이 감지되면 데이터 다시 불러오기
+            loadData();
           })
           .subscribe();
 
