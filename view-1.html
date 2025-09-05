@@ -342,18 +342,20 @@
                 </tr>
             `).join('');
 
-            // 모바일용 카드 뷰 - 개선된 레이아웃
+            // 모바일용 카드 뷰 - 세로 배치 레이아웃
             mobileGrid.innerHTML = data.map(row => `
                 <div class="data-card">
-                    <div class="card-header">
-                        <div class="card-name">${escapeHtml(row.user_id || '익명')}</div>
-                        <div class="card-checkbox">
-                            <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
-                        </div>
+                    <div class="card-name-section">
+                        <div class="name-label">이름:</div>
+                        <div class="name-value">${escapeHtml(row.user_id || '익명')}</div>
                     </div>
-                    <div class="card-content">
+                    <div class="card-content-section">
                         <div class="content-label">내용:</div>
                         <div class="content-text">${escapeHtml(row.content || '')}</div>
+                    </div>
+                    <div class="card-checkbox-section">
+                        <div class="checkbox-label">선택:</div>
+                        <input type="checkbox" class="delete-checkbox card-checkbox" data-id="${row.id}">
                     </div>
                 </div>
             `).join('');
