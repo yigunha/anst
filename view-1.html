@@ -215,14 +215,14 @@
                 display: grid;
             }
             
-            /* 모바일에서 컨트롤 버튼 레이아웃 조정 */
+            /* 모바일에서 컨트롤 버튼을 같은 줄에 유지 */
             .controls {
-                flex-direction: column;
+                flex-direction: row;
             }
             
             button {
-                flex-grow: 0;
-                width: 100%;
+                flex: 1;
+                min-width: 0;
             }
         }
 
