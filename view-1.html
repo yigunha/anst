@@ -342,23 +342,25 @@
                 </tr>
             `).join('');
 
-            // 모바일용 카드 뷰 - 세로 배치 레이아웃
-            mobileGrid.innerHTML = data.map(row => `
+            // 모바일용 카드 뷰 - 테이블형 가로 배치
+            mobileGrid.innerHTML = data.map(row => {
+                const userName = escapeHtml(row.user_id || '익명');
+                const isShortName = userName.length <= 3;
+                
+                return `
                 <div class="data-card">
                     <div class="card-name-section">
-                        <div class="name-label">이름:</div>
-                        <div class="name-value">${escapeHtml(row.user_id || '익명')}</div>
+                        <div class="name-value ${isShortName ? 'short-name' : ''}">${userName}</div>
                     </div>
                     <div class="card-content-section">
-                        <div class="content-label">내용:</div>
                         <div class="content-text">${escapeHtml(row.content || '')}</div>
                     </div>
                     <div class="card-checkbox-section">
-                        <div class="checkbox-label">선택:</div>
                         <input type="checkbox" class="delete-checkbox card-checkbox" data-id="${row.id}">
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             addCheckboxListeners();
         }
