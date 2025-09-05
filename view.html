@@ -31,7 +31,7 @@
             justify-content: center;
         }
 
-        button {
+        .controls button {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
@@ -41,14 +41,15 @@
             cursor: pointer;
             transition: all 0.2s;
             flex-grow: 1;
+            min-width: 100px; /* 모든 버튼의 최소 너비를 설정하여 크기 변화를 방지 */
         }
 
-        button:hover {
+        .controls button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        button:disabled {
+        .controls button:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
@@ -63,7 +64,7 @@
             background: #c82333;
         }
 
-        /* 데스크톱용 테이블 뷰 */
+        /* 데스크탑용 테이블 뷰 */
         .data-grid-table {
             display: none;
             overflow-x: auto;
@@ -107,7 +108,7 @@
             text-align: center;
         }
         
-        /* 모바일용 카드 뷰 */
+        /* 모바일용 카드 뷰 - 개선된 레이아웃 */
         .data-grid-mobile {
             display: grid;
             gap: 15px;
@@ -119,7 +120,6 @@
             border-left: 5px solid #667eea;
             border-radius: 8px;
             padding: 15px;
-            position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: transform 0.2s;
         }
@@ -128,33 +128,50 @@
             transform: translateY(-3px);
         }
 
-        .card-item {
+        /* 카드 헤더 - 이름과 체크박스를 나란히 배치 */
+        .card-header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        .card-label {
+        .card-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+            flex-grow: 1;
+            margin-right: 15px;
+        }
+
+        .card-checkbox {
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        /* 카드 내용 영역 */
+        .card-content {
+            margin-top: 10px;
+        }
+
+        .content-label {
             font-weight: bold;
             color: #555;
-            min-width: 80px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
-        .card-value {
-            flex-grow: 1;
-            text-align: right;
-            word-break: break-all;
-        }
-
-        .content-card-value {
-            font-weight: normal;
-            font-size: 0.9em;
-            text-align: left;
-            margin-top: 10px;
-            line-height: 1.4;
+        .content-text {
+            line-height: 1.5;
             color: #333;
             word-wrap: break-word;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            font-size: 14px;
         }
 
         .message {
@@ -190,12 +207,11 @@
             font-style: italic;
         }
 
-        .delete-checkbox-mobile {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        /* 이름을 숨기는 클래스 */
+        .name-hidden {
+            display: none;
         }
-
+        
         /* 모바일에서만 카드 뷰를 표시 */
         @media (max-width: 767px) {
             .data-grid-table {
@@ -204,9 +220,19 @@
             .data-grid-mobile {
                 display: grid;
             }
+            
+            /* 모바일에서 컨트롤 버튼을 같은 줄에 유지 */
+            .controls {
+                flex-direction: row;
+            }
+            
+            button {
+                flex: 1;
+                min-width: 0;
+            }
         }
 
-        /* 데스크톱에서만 테이블 뷰를 표시 */
+        /* 데스크탑에서만 테이블 뷰를 표시 */
         @media (min-width: 768px) {
             .data-grid-table {
                 display: block;
@@ -220,7 +246,8 @@
 <body>
     <div class="container">
         <div class="controls">
-            <button onclick="loadData()">🔄 새로고침</button>
+            <button id="toggleNameBtn" onclick="toggleNames()">이름 보기</button>
+            <button onclick="deleteAllRecords()">❌ 전체 삭제</button>
             <button id="deleteSelectedBtn" onclick="deleteSelectedRecords()">🗑️ 선택 삭제</button>
         </div>
 
@@ -230,7 +257,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 15%;">학생 이름</th>
+                        <th id="nameHeader" class="name-hidden" style="width: 15%;">이름</th>
                         <th>내용</th>
                         <th style="width: 10%;"><input type="checkbox" id="selectAllDesktop"></th>
                     </tr>
@@ -257,6 +284,7 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let allData = [];
+        let namesVisible = false;
 
         // 메시지 표시 함수
         function showMessage(text, type) {
@@ -268,7 +296,7 @@
             if (type === 'success') {
                 setTimeout(() => {
                     messageDiv.style.display = 'none';
-                }, 3000);
+                }, 1000);
             }
         }
 
@@ -311,13 +339,13 @@
 
             noData.style.display = 'none';
 
-            // 데스크톱용 테이블 뷰
+            // 데스크탑용 테이블 뷰
             dataBody.innerHTML = data.map(row => `
                 <tr>
-                    <td><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
+                    <td class="name-td ${namesVisible ? '' : 'name-hidden'}" data-name-id="name-${row.id}"><strong>${escapeHtml(row.user_id || '익명')}</strong></td>
                     <td class="content-cell">${escapeHtml(row.content || '')}</td>
                     <td class="delete-checkbox-cell">
-                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
+                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
                     </td>
                 </tr>
             `).join('');
@@ -325,18 +353,12 @@
             // 모바일용 카드 뷰
             mobileGrid.innerHTML = data.map(row => `
                 <div class="data-card">
-                    <div class="card-item">
-                        <span class="card-label">학생 이름</span>
-                        <span class="card-value"><strong>${escapeHtml(row.user_id || '익명')}</strong></span>
+                    <div class="card-header-row">
+                        <div class="name-value ${namesVisible ? '' : 'name-hidden'}" data-name-id="name-${row.id}">${escapeHtml(row.user_id || '익명')}</div>
+                        <input type="checkbox" class="delete-checkbox card-checkbox" data-id="${row.id}" data-user-id="${row.user_id}">
                     </div>
-                    <div class="card-item">
-                        <span class="card-label">내용</span>
-                    </div>
-                    <div class="content-card-value">
-                        ${escapeHtml(row.content || '')}
-                    </div>
-                    <div class="delete-checkbox-mobile">
-                        <input type="checkbox" class="delete-checkbox" data-id="${row.id}">
+                    <div class="card-content-section">
+                        <div class="content-text">${escapeHtml(row.content || '')}</div>
                     </div>
                 </div>
             `).join('');
@@ -344,7 +366,7 @@
             addCheckboxListeners();
         }
 
-        // 체크박스 이벤트 리스너 추가
+        // 체크박스 이벤트 리스너 추가 (이름 표시 기능 분리)
         function addCheckboxListeners() {
             const selectAllDesktop = document.getElementById('selectAllDesktop');
             const checkboxes = document.querySelectorAll('.delete-checkbox');
@@ -358,6 +380,7 @@
             }
 
             checkboxes.forEach(checkbox => {
+                // 개별 체크박스에 대한 이벤트 리스너
                 checkbox.addEventListener('change', () => {
                     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
                     if (selectAllDesktop) {
@@ -365,6 +388,33 @@
                     }
                 });
             });
+        }
+        
+        // 이름 보기/숨기기 기능
+        function toggleNames() {
+            namesVisible = !namesVisible;
+            const nameElements = document.querySelectorAll('.name-td, .name-value');
+            const toggleBtn = document.getElementById('toggleNameBtn');
+            const nameHeader = document.getElementById('nameHeader'); // 이름 헤더 추가
+            
+            nameElements.forEach(element => {
+                if (namesVisible) {
+                    element.classList.remove('name-hidden');
+                } else {
+                    element.classList.add('name-hidden');
+                }
+            });
+
+            // 이름 헤더 토글
+            if (nameHeader) {
+                if (namesVisible) {
+                    nameHeader.classList.remove('name-hidden');
+                } else {
+                    nameHeader.classList.add('name-hidden');
+                }
+            }
+            
+            toggleBtn.textContent = namesVisible ? '이름 숨기기' : '이름 보기';
         }
 
         // 선택 항목 삭제
@@ -375,11 +425,12 @@
                 return;
             }
 
-            if (!confirm(`선택된 ${checkedBoxes.length}개의 데이터를 정말로 삭제하시겠습니까?`)) {
+            const idsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
+            const userIdsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.userId);
+
+            if (!confirm(`선택된 ${checkedBoxes.length}개의 데이터를 정말로 삭제하시겠습니까?\n\n- ${userIdsToDelete.join('\n- ')}`)) {
                 return;
             }
-
-            const idsToDelete = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
 
             try {
                 const { error } = await supabase
@@ -396,6 +447,29 @@
             } catch (error) {
                 console.error('삭제 오류:', error);
                 showMessage('❌ 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+        }
+
+        // 전체 삭제
+        async function deleteAllRecords() {
+            if (!confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('student_inputs')
+                    .delete()
+                    .neq('id', 'null'); // 모든 데이터 삭제를 위한 조건
+
+                if (error) {
+                    throw error;
+                }
+
+                showMessage('✅ 모든 데이터가 삭제되었습니다!', 'success');
+            } catch (error) {
+                console.error('전체 삭제 오류:', error);
+                showMessage('❌ 전체 삭제 중 오류가 발생했습니다: ' + error.message, 'error');
             }
         }
 
